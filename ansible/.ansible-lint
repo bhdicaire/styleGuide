@@ -1,0 +1,12 @@
+profile: production
+use_default_rules: true
+
+exclude_paths:
+  - .cache/
+  - .github/
+  - collections/
+
+warn_list:
+  - experimental
+
+skip_list: []

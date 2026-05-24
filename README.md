@@ -10,7 +10,9 @@ This repository is a _template_ you can [use](https://github.com/bhdicaire/repos
 ## Style guide sections
 
 * [Global conventions](CONVENTIONS.md): shared defaults for naming, formatting, comments, and automation
+* [Ansible](ansible/README.md): playbook style, ansible-lint, yamllint, and collection requirements
 * [Git commits](git-commit/README.md): Conventional Commits, commitlint, and Commitizen rules
+* [Hugo](hugo/README.md): static site structure, front matter, markup, and local build checks
 * [Bash and zsh](shell/README.md): shell scripting rules, shfmt, and ShellCheck configuration
 * [Makefile](makefile/README.md): Makefile target style, tabs for recipes, and checkmake configuration
 * [npm and Node](npm-node/README.md): npm package rules, Node runtime expectations, Prettier, and ESLint configuration

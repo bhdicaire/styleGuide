@@ -1,0 +1,16 @@
+{
+  "name": "example-hugo-site",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "hugo-extended": "^0.150.0",
+    "markdownlint-cli2": "^0.18.1"
+  },
+  "scripts": {
+    "build": "hugo --minify",
+    "check": "npm run lint && npm run build",
+    "dev": "hugo server --disableFastRender",
+    "lint": "markdownlint-cli2 \"**/*.md\""
+  }
+}
