@@ -1,24 +1,46 @@
 # npm and Node style guide
 
-## Rationale
+A build passed on one laptop and failed in CI because nobody wrote down which Node version the project expected. The package manager was not the problem. The contract was missing.
 
-npm and Node belong together in this guide. npm manages packages and scripts, but those packages run on Node. A repository that documents one without the other leaves too much room for accidental version drift.
+The rule is simple: document the [Node.js](https://nodejs.org/en) runtime and the [npm](https://docs.npmjs.com/) install behavior together. npm without Node is half a policy.
 
-Use this directory for JavaScript and TypeScript repositories that use npm as their package manager. If a project uses pnpm or Yarn, keep the Node rules and replace the npm-specific rules with the package manager's own guide.
+## Thesis
 
-## Rules
+An npm project is reproducible only when `package.json`, `package-lock.json`, `.npmrc`, and CI agree on the runtime contract.
+
+## Runtime contract
+
+Last verified: 2026-05-24.
+
+Declare supported runtimes in [`engines`](https://docs.npmjs.com/cli/v11/configuring-npm/package-json#engines).
+
+Use [`devEngines`](https://docs.npmjs.com/cli/v11/configuring-npm/package-json#devengines) when contributors need an enforced local toolchain.
+
+Set `engine-strict=true` in `.npmrc` when the project should fail fast on the wrong runtime.
+
+```ini
+engine-strict=true
+fund=false
+save-exact=true
+```
+
+## Package rules
 
 Commit `package.json`.
 
 Commit `package-lock.json` for applications, CLIs, websites, and internal tools.
 
-Use `npm ci` in CI. Use `npm install` when intentionally updating dependencies.
+Use `npm ci` in CI.
 
-Declare supported runtime versions with `engines`.
+Use `npm install` only when intentionally updating dependencies.
 
-Use `devEngines` when contributors need a stricter local toolchain check.
+Use ESM for new Node projects unless a dependency or runtime constraint requires CommonJS.
 
-Keep scripts predictable:
+Keep generated files out of source control unless publishing or deployment requires them.
+
+## Scripts
+
+Use a small script vocabulary:
 
 ```json
 {
@@ -32,39 +54,36 @@ Keep scripts predictable:
 }
 ```
 
-Prefer `npm run check` as the command CI and humans can both remember.
+Use `npm run check` as the human and CI entry point.
 
-Use ESM for new Node projects unless a dependency or runtime constraint requires CommonJS.
+## Formatting and linting
 
-Use `camelCase` for local variables and object properties.
+Use [Prettier](https://prettier.io/docs/options) for formatting.
 
-Use `PascalCase` for classes and types.
+Use [ESLint flat config](https://eslint.org/docs/latest/use/configure/configuration-files) for JavaScript linting.
 
-Use `UPPER_SNAKE_CASE` for environment variables.
-
-Keep generated files out of source control unless they are required for publishing or deployment.
-
-## Tooling
-
-Use EditorConfig for shared whitespace rules.
-
-Use Prettier for formatting JavaScript, TypeScript, JSON, YAML, Markdown, and CSS.
-
-Use ESLint for code quality and likely defects.
-
-Use npm's built-in `npm audit` as a signal, not as an automatic panic button. Review severity, exploitability, and deployment context.
-
-## Files
-
-- `.npmrc`: npm defaults for reproducible installs.
-- `.prettierrc.json`: formatting defaults.
-- `eslint.config.mjs`: flat ESLint starter configuration.
-- `package.example.json`: recommended script and engine shape.
-
-## Local checks
+Use the built-in [Node test runner](https://nodejs.org/api/test.html) for small projects before adding a heavier framework.
 
 ```sh
 npm ci
 npm run check
 npm audit
 ```
+
+Treat `npm audit` as a signal. Review severity, exploitability, and deployment context before changing dependency trees.
+
+## Tradeoff
+
+`save-exact=true` reduces surprise but increases update maintenance. That is acceptable for applications. Libraries may prefer ranges when they intentionally support a wider dependency surface.
+
+## Closing
+
+The lockfile is not clerical. It is the build receipt.
+
+## Change log for this rewrite
+
+* Thesis identified: reproducibility depends on runtime and install contracts agreeing.
+* Claims dated: npm and Node guidance marked `Last verified: 2026-05-24`.
+* Links added: Node.js, npm docs, `engines`, `devEngines`, Prettier, ESLint flat config, Node test runner.
+* Tradeoff surfaced: exact dependency saves reduce drift but add update work.
+* Flagged but unchanged: pnpm and Yarn are out of scope for this npm-specific guide.

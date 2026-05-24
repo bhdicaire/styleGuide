@@ -1,14 +1,16 @@
 # Git commit style guide
 
-## Rationale
+A release went out with the wrong version bump because the commit said `chore:` when the change fixed user-visible behavior. The diff was right. The metadata lied.
 
-Commit messages are interface text for future maintainers and release automation. They should explain the kind of change before they explain the detail.
+The rule is simple: use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) when commit history drives changelogs, release notes, or [Semantic Versioning](https://semver.org/).
 
-Use Conventional Commits because the format is small, readable, and understood by tools such as commitlint, release-please, semantic-release, and changelog generators.
+Otherwise, do not pretend the format is free.
 
-## Rules
+## Thesis
 
-Use this shape:
+A commit message is release metadata. If automation reads it, enforce it.
+
+## Format
 
 ```text
 <type>[optional scope]: <description>
@@ -20,9 +22,9 @@ Use this shape:
 
 Use lowercase types.
 
-Keep the subject line under 72 characters when practical.
+Keep the first line under 72 characters when practical.
 
-Use the imperative mood:
+Use imperative mood:
 
 ```text
 fix(cli): reject empty config path
@@ -30,14 +32,14 @@ fix(cli): reject empty config path
 
 Do not end the subject with a period.
 
-Use a scope when it makes the commit easier to place:
+Use a scope only when it narrows the change:
 
 ```text
 docs(readme): add install notes
 ci(release): add release-please workflow
 ```
 
-Use `!` or a `BREAKING CHANGE:` footer for incompatible public changes:
+Mark incompatible public changes with `!` or `BREAKING CHANGE:`:
 
 ```text
 feat(api)!: require OAuth tokens
@@ -51,11 +53,11 @@ Use `fix` for corrected user-visible behavior.
 
 Use `docs` for documentation-only changes.
 
-Use `style` for formatting-only changes that do not affect behavior.
+Use `style` for formatting-only changes. Not visual design.
 
 Use `refactor` for behavior-preserving code restructuring.
 
-Use `perf` for behavior-preserving performance improvements.
+Use `perf` for behavior-preserving performance work.
 
 Use `test` for test-only changes.
 
@@ -63,28 +65,37 @@ Use `build` for dependencies, packaging, and build-system changes.
 
 Use `ci` for CI and GitHub Actions changes.
 
-Use `chore` for repository maintenance that does not fit a more specific type.
+Use `chore` for repository maintenance that does not fit a more precise type.
 
 Use `revert` for commits that undo earlier commits.
 
-When in doubt, choose the type that describes the user-visible effect. If there is no user-visible effect, choose the most specific maintenance type.
+## Enforcement
 
-## Tooling
+Last verified: 2026-05-24.
 
-Use commitlint to enforce the message shape.
+Use [commitlint](https://commitlint.js.org/reference/configuration.html) to reject malformed messages.
 
-Use Commitizen or a similar prompt when writing commits interactively.
+Use [Commitizen](https://github.com/commitizen/cz-cli) when humans need a prompt.
 
-Use release-please or semantic-release only after the repository already follows Conventional Commits consistently.
-
-## Files
-
-- `commitlint.config.cjs`: commit message linting rules.
-- `commitizen.config.cjs`: interactive commit prompt configuration.
-
-## Local checks
+Use local hooks for solo projects. Use CI checks for teams. Local hooks do not protect a repository from a fork, a fresh clone, or a contributor who skipped setup.
 
 ```sh
 npx commitlint --from origin/main --to HEAD
 npx cz
 ```
+
+## Tradeoff
+
+Conventional Commits add friction. That friction is worth paying when `release-please`, semantic-release, or changelog automation reads the log. It is theatre when nobody consumes the structure.
+
+## Closing
+
+The point is not prettier commit history. The point is a log that can safely decide what ships.
+
+## Change log for this rewrite
+
+* Thesis identified: commit messages are release metadata.
+* Claims dated: tool commands marked `Last verified: 2026-05-24`.
+* Links added: Conventional Commits, SemVer, commitlint, Commitizen.
+* Tradeoff surfaced: the format is overhead when no automation consumes it.
+* Flagged but unchanged: exact type list stays conventional, not project-specific.

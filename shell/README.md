@@ -1,23 +1,31 @@
 # Bash and zsh style guide
 
-## Rationale
+A deployment script deleted the wrong directory because an empty variable survived long enough to become a path. Shell did not betray anyone. It accepted vague input.
 
-Shell scripts are glue code. They should be small, explicit, and easy to delete when a better tool appears.
+The rule is simple: use [Bash](https://www.gnu.org/software/bash/manual/bash.html) for scripts and [zsh](https://zsh.sourceforge.io/Doc/) for interactive configuration.
 
-Use Bash for scripts that need arrays, strict mode, or predictable behavior across machines. Use zsh for interactive shell configuration and personal functions. Avoid writing portable `sh` unless portability is the actual goal.
+Use [ShellCheck](https://www.shellcheck.net/) for the mistakes humans keep making.
 
-## Rules
+## Thesis
 
-Start executable Bash scripts with:
+Shell code should be small, explicit glue. The moment it owns business logic, it should justify its existence.
+
+## Script baseline
+
+Use this for executable Bash scripts:
 
 ```sh
 #!/usr/bin/env bash
 set -Eeuo pipefail
 ```
 
-Use zsh only for interactive files such as `.zshrc`, prompt setup, completions, and shell-specific functions.
+Use zsh for `.zshrc`, prompt setup, completions, and personal interactive functions.
 
-Use 2 spaces for indentation.
+Do not write portable `sh` unless portability is the actual requirement.
+
+## Rules
+
+Use 2 spaces.
 
 Quote variable expansions unless word splitting is intentional:
 
@@ -37,32 +45,27 @@ log_info() {
 }
 ```
 
-Use lowercase function and variable names unless exporting environment variables.
+Use lowercase function and variable names.
 
 Use `UPPER_SNAKE_CASE` for exported environment variables.
 
-Prefer `local` variables inside functions.
+Use `local` inside functions.
 
 Prefer `case` over long chains of string comparisons.
 
 Do not parse `ls`.
 
-Do not hide errors with `|| true` without a comment explaining why failure is acceptable.
+Do not write `|| true` without explaining why failure is acceptable.
 
-## Tooling
+## Enforcement
 
-Use `shfmt` to format shell scripts.
+Last verified: 2026-05-24.
 
-Use `shellcheck` to catch quoting, portability, and error-handling mistakes.
+Use [shfmt](https://github.com/mvdan/sh) for formatting.
 
-Use EditorConfig so editors and shfmt agree on indentation.
+Use ShellCheck for static analysis.
 
-## Files
-
-- `.editorconfig`: shell formatting defaults for editors and shfmt.
-- `.shellcheckrc`: ShellCheck defaults.
-
-## Local checks
+Use parser checks before execution:
 
 ```sh
 shfmt -w .
@@ -70,3 +73,19 @@ shellcheck scripts/*.sh
 zsh -n path/to/file.zsh
 bash -n path/to/file.sh
 ```
+
+## Tradeoff
+
+`set -Eeuo pipefail` is a guardrail, not proof of safety. It can make deliberate non-zero statuses noisy. Handle expected failures explicitly near the command that can fail.
+
+## Closing
+
+Good shell code is unromantic. It moves files, calls programs, checks exits, and leaves before it becomes an application.
+
+## Change log for this rewrite
+
+* Thesis identified: shell should remain small explicit glue.
+* Claims dated: tooling commands marked `Last verified: 2026-05-24`.
+* Links added: Bash manual, zsh docs, ShellCheck, shfmt.
+* Tradeoff surfaced: strict mode has failure modes and needs local exceptions.
+* Flagged but unchanged: POSIX `sh` remains excluded unless a project explicitly needs portability.

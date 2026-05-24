@@ -1,57 +1,52 @@
 # Hugo style guide
 
-## Rationale
+A local image did not load because it sat beside a Markdown file that was not a page bundle. Hugo did what it was told. The site structure was unclear.
 
-Hugo sites are easiest to maintain when content, configuration, layouts, and generated output stay clearly separated. Hugo is fast enough that the workflow should encourage frequent local builds instead of guessing.
+The rule is simple: write [Hugo](https://gohugo.io/) sites so content, assets, layouts, and generated output have separate jobs. When the boundary matters, encode it in the tree.
 
-Use Hugo for static sites where content can live in files and publishing should be reproducible. Avoid hiding site behavior in theme magic when a local layout, partial, or render hook would make the project easier to understand.
+## Thesis
+
+Hugo stays boring when the repository shape tells Hugo where every artifact belongs.
 
 ## Installation
 
-Install the extended edition of Hugo when possible. The [official Hugo macOS installation guide](https://gohugo.io/installation/macos/) recommends the extended edition.
+Last verified: 2026-05-24.
 
-On macOS with Homebrew:
+Use the extended Hugo build unless a project proves it does not need asset processing.[^extended]
 
 ```sh
 brew install hugo
 hugo version
 ```
 
-Install Git when the site uses Hugo Modules, themes as submodules, Git info, or common deployment providers:
-
-```sh
-brew install git
-git --version
-```
-
-Install Go when the site uses [Hugo Modules](https://gohugo.io/hugo-modules/):
+Install [Go](https://go.dev/doc/install) when the site uses [Hugo Modules](https://gohugo.io/hugo-modules/):
 
 ```sh
 brew install go
 go version
 ```
 
-Install Dart Sass when the site uses modern Sass features. Hugo documents Dart Sass installation in its [Sass function documentation](https://gohugo.io/functions/css/sass/).
+Install [Dart Sass](https://sass-lang.com/dart-sass/) when the site uses modern Sass features:
 
 ```sh
 brew install sass/sass/sass
 sass --version
 ```
 
-If a repository needs Hugo pinned through npm, use the Node guide and install [hugo-extended](https://www.npmjs.com/package/hugo-extended) as a development dependency:
+Pin Hugo through npm only when the repository already uses Node tooling:
 
 ```sh
 npm install --save-dev hugo-extended
 npx hugo version
 ```
 
-## Rules
+## Structure
 
-Use `config/_default/` for multi-environment or multilingual configuration.
+Use `config/_default/` for multilingual or multi-environment sites.
 
-Use one configuration format per project. Prefer YAML when the surrounding content already uses YAML front matter.
+Use one configuration format per project. Prefer YAML when content front matter already uses YAML.
 
-Use page bundles when content owns images or attachments:
+Use [page bundles](https://gohugo.io/content-management/page-bundles/) when a page owns images or attachments:
 
 ```text
 content/blog/example-post/
@@ -59,29 +54,15 @@ content/blog/example-post/
 └── hero.jpg
 ```
 
-Use leaf bundles for single pages with resources.
+Put site-wide static files under `static/`.
 
-Use branch bundles for sections that need section content and child pages.
+Keep generated output out of source control unless the host requires it.
 
-Keep generated output out of source control unless the hosting platform requires it.
+Use [archetypes](https://gohugo.io/content-management/archetypes/) for repeated front matter.
 
-Prefer render hooks over raw HTML in Markdown when behavior should be consistent across the site.
+Use stable slugs for published pages. A changed URL needs a redirect.
 
-Prefer shortcodes for explicit author intent and render hooks for automatic Markdown behavior.
-
-Use archetypes for repeated front matter.
-
-Use `draft: true` only for local drafts. Do not rely on drafts for long-term private notes in a public repository.
-
-Use stable slugs for published pages. Changing a URL requires a redirect.
-
-Use relative links to site pages when possible, and let Hugo resolve them.
-
-Keep theme overrides small and local. If a theme needs extensive overrides, consider owning the layout.
-
-## Content front matter
-
-Use this minimum front matter for dated content:
+## Front matter
 
 ```yaml
 ---
@@ -94,13 +75,13 @@ draft: true
 ---
 ```
 
-Use [Hugo front matter](https://gohugo.io/content-management/front-matter/) fields deliberately. Metadata should help templates, feeds, search, previews, or humans.
+Use [front matter](https://gohugo.io/content-management/front-matter/) for metadata that templates, feeds, search, previews, or humans actually use.
 
 ## Markup
 
-Hugo uses Goldmark for Markdown by default. Configure Markdown rendering in the site configuration, as documented in [Configure markup](https://gohugo.io/configuration/markup/).
+Hugo uses [Goldmark](https://github.com/yuin/goldmark/) for Markdown by default.
 
-Recommended starter:
+Configure Markdown rendering in [markup configuration](https://gohugo.io/configuration/markup/):
 
 ```yaml
 markup:
@@ -112,31 +93,32 @@ markup:
         useEmbedded: auto
 ```
 
-Use [link render hooks](https://gohugo.io/render-hooks/links/) when links need consistent external-link attributes, broken-link handling, or multilingual behavior.
+Use [render hooks](https://gohugo.io/render-hooks/) for site-wide link and image behavior.
 
-## Tooling
+Use shortcodes when the author must opt into a special rendering path.
 
-Use `hugo --minify` for production builds.
-
-Use `hugo server --disableFastRender` when debugging templates or content that does not refresh cleanly.
-
-Use `markdownlint` for Markdown files.
-
-Use `prettier` for YAML, JSON, CSS, and JavaScript assets when the repository already uses Node tooling.
-
-Use `htmltest` or another link checker for larger public sites.
-
-## Files
-
-- `config.yaml`: starter Hugo configuration.
-- `archetypes/default.md`: default front matter for new content.
-- `.markdownlint.yml`: Markdown linting defaults for Hugo content.
-- `package.example.json`: optional npm scripts for projects that pin Hugo tooling through npm.
-
-## Local checks
+## Enforcement
 
 ```sh
 hugo server --disableFastRender
 hugo --minify
 npx markdownlint-cli2 "**/*.md"
 ```
+
+## Tradeoff
+
+Theme overrides start cheap and become archaeology. If a site overrides most of a theme, own the layout instead of pretending the theme is still the architecture.
+
+## Closing
+
+Hugo is fast enough to remove excuses. Build often. Let the file tree carry the intent.
+
+## Change log for this rewrite
+
+* Thesis identified: repository shape is the contract.
+* Claims dated: installation commands marked `Last verified: 2026-05-24`.
+* Links added: Hugo, Go, Hugo Modules, Dart Sass, page bundles, archetypes, front matter, Goldmark, markup config, render hooks.
+* Tradeoff surfaced: heavy theme overrides are a maintenance smell.
+* Flagged but unchanged: npm pinning remains optional because not every Hugo site should depend on Node.
+
+[^extended]: The extended build is the safe default for sites that process Sass or other assets.

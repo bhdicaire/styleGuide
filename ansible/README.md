@@ -1,37 +1,32 @@
 # Ansible style guide
 
-## Rationale
+A playbook failed because a `shell:` task said "install dependencies" and did six unrelated things. The failure was not Ansible's fault. The task had no contract.
 
-Ansible is readable when it stays declarative. A playbook should explain the desired state, not perform a clever shell session one task at a time.
+The rule is simple: write [Ansible](https://docs.ansible.com/ansible/latest/) as declarative operations with small blast radii.
 
-Use Ansible for repeatable system configuration, service deployment, and operational workflows. Do not use it as a general-purpose scripting language when a small shell script or purpose-built CLI would be clearer.
+Then let [ansible-lint](https://ansible.readthedocs.io/projects/lint/) and [yamllint](https://yamllint.readthedocs.io/en/stable/) enforce the boring parts.
+
+## Thesis
+
+Ansible stays maintainable when every task names one desired state and uses the narrowest module that can enforce it.
 
 ## Installation
 
-Install Ansible with `pipx` so the CLI is isolated from the system Python environment. This follows the [official Ansible installation guide](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html).
+Last verified: 2026-05-24.
+
+Use `pipx` for local CLI tools. It keeps Ansible out of the system Python environment.[^pipx]
 
 ```sh
 python3 -m pip install --user pipx
 python3 -m pipx ensurepath
 pipx install --include-deps ansible
+pipx install ansible-lint yamllint
 ansible --version
-```
-
-Install [ansible-lint](https://docs.ansible.com/projects/lint/en/latest/installing.html) separately:
-
-```sh
-pipx install ansible-lint
 ansible-lint --version
-```
-
-Install [yamllint](https://yamllint.readthedocs.io/en/stable/) when the repository contains YAML outside Ansible content:
-
-```sh
-pipx install yamllint
 yamllint --version
 ```
 
-Install collections with [ansible-galaxy](https://docs.ansible.com/ansible/latest/collections_guide/collections_installing.html):
+Install collections from a pinned requirements file:
 
 ```sh
 ansible-galaxy collection install -r requirements.yml
@@ -39,46 +34,34 @@ ansible-galaxy collection install -r requirements.yml
 
 ## Rules
 
-Use YAML with 2-space indentation and no tabs.
+Use YAML with 2 spaces. No tabs.
 
-Use fully qualified collection names when the module is not from `ansible.builtin`:
+Every task has a `name`.
+
+Task names describe the desired state, not the action:
 
 ```yaml
-- name: Install nginx
+- name: Ensure nginx is installed
   ansible.builtin.package:
     name: nginx
     state: present
 ```
 
-Every task needs a `name`.
+Prefer `ansible.builtin.*` modules over `command` and `shell`.
 
-Task names should describe the desired outcome:
+Use `ansible.builtin.command` when no module fits and shell features are not required.
 
-```yaml
-- name: Ensure nginx is installed
-```
+Use `ansible.builtin.shell` only when pipes, redirects, globbing, or compound commands are the point.
 
-Prefer modules over `ansible.builtin.command` or `ansible.builtin.shell`.
+Add `changed_when` and `failed_when` when Ansible cannot infer idempotence.
 
-Use `ansible.builtin.command` when no module fits and shell features are not needed.
+Use handlers for service restarts.
 
-Use `ansible.builtin.shell` only when shell features such as pipes, redirects, globbing, or compound commands are required.
-
-Add `changed_when` and `failed_when` when Ansible cannot infer idempotence correctly.
-
-Prefer handlers for service restarts.
-
-Prefer role defaults for overrideable values.
-
-Keep secrets out of playbooks. Use Ansible Vault, environment-specific secret stores, or CI secrets.
+Keep secrets out of playbooks. Use [Ansible Vault](https://docs.ansible.com/ansible/latest/vault_guide/index.html), a CI secret store, or a platform secret manager.
 
 Pin external collections in `requirements.yml`.
 
-Keep inventories separate from reusable roles.
-
-## Repository layout
-
-Use this layout for most repositories:
+## Repository shape
 
 ```text
 .
@@ -99,22 +82,13 @@ Use this layout for most repositories:
             └── main.yml
 ```
 
-## Tooling
+## Enforcement
 
-Use [ansible-lint](https://ansible.readthedocs.io/projects/lint/) for Ansible-specific rules.
+Use `.ansible-lint` for Ansible-specific rules.
 
-Use [yamllint](https://yamllint.readthedocs.io/en/stable/) for general YAML formatting and readability.
+Use `.yamllint.yml` for YAML rules shared by inventories, playbooks, and CI files.
 
-Use [pre-commit](https://pre-commit.com/) when a team wants checks to run before commits.
-
-## Files
-
-- `.ansible-lint`: ansible-lint configuration.
-- `.yamllint.yml`: YAML style rules.
-- `ansible.cfg`: safe local defaults for a project.
-- `requirements.yml`: example pinned collection dependencies.
-
-## Local checks
+Run the same checks locally and in CI:
 
 ```sh
 ansible-galaxy collection install -r requirements.yml
@@ -122,3 +96,21 @@ ansible-lint
 yamllint .
 ansible-playbook --syntax-check playbooks/site.yml
 ```
+
+## Tradeoff
+
+Ansible is a poor fit for long imperative workflows. If the playbook turns into a shell script with YAML indentation, write a script, test it, and call it deliberately.
+
+## Closing
+
+Good Ansible reads like an inventory of outcomes. Bad Ansible reads like a transcript of what happened on one machine, once.
+
+## Change log for this rewrite
+
+* Thesis identified: maintainability comes from one desired state per task and narrow modules.
+* Claims dated: installation commands marked `Last verified: 2026-05-24`.
+* Links added: Ansible, ansible-lint, yamllint, Ansible Vault.
+* Tradeoff surfaced: shell-like playbooks should usually become scripts.
+* Flagged but unchanged: collection versions stay in `requirements.yml`, not this README.
+
+[^pipx]: Ansible's install guidance changes by platform. The durable rule is isolation; `pipx` is the local default here.
