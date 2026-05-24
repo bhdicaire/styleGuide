@@ -1,0 +1,4 @@
+enable=all
+external-sources=true
+shell=bash
+severity=style

@@ -7,6 +7,14 @@
 
 This repository is a _template_ you can [use](https://github.com/bhdicaire/repositoryTemplate/generate) to start new projects with a consistent structure and [batteries included](docs/bestPractices.md).
 
+## Style guide sections
+
+* [Global conventions](CONVENTIONS.md): shared defaults for naming, formatting, comments, and automation
+* [Git commits](git-commit/README.md): Conventional Commits, commitlint, and Commitizen rules
+* [Bash and zsh](shell/README.md): shell scripting rules, shfmt, and ShellCheck configuration
+* [Makefile](makefile/README.md): Makefile target style, tabs for recipes, and checkmake configuration
+* [npm and Node](npm-node/README.md): npm package rules, Node runtime expectations, Prettier, and ESLint configuration
+
 ## :notebook_with_decorative_cover: Ingredients
 
 <details>
