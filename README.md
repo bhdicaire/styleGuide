@@ -1,4 +1,4 @@
-# ![Logo](docs/header.png "Logo")
+# ![Logo](.github/banner.png "Logo")
 
 ![GitHub Stars](https://img.shields.io/github/stars/bhdicaire/repositoryTemplate?style=flat-square&logoColor=186ADE&labelColor=3E5462&color=C25100)
 ![GitHub forks](https://img.shields.io/github/forks/bhdicaire/repositoryTemplate?style=flat-square&logoColor=186ADE&labelColor=3E5462&color=C25100)
